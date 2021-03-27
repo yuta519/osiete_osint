@@ -1,0 +1,42 @@
+[
+  {
+    "model": "service.Service",
+    "fields": {
+      "name": "VirusTotal",
+      "slug": "vt",
+      "url": "https://www.virustotal.com/api/v3/"
+    }
+  },
+  {
+    "model": "service.Service",
+    "fields": {
+      "name": "ThreatMiner",
+      "slug": "tm",
+      "url": "https://api.threatminer.org/v2/domain.php"
+    }
+  },
+  {
+    "model": "service.Service",
+    "fields": {
+      "name": "Shodan",
+      "slug": "sh",
+      "url": "https://api.shodan.io"
+    }
+  },
+  {
+    "model": "service.Service",
+    "fields": {
+      "name": "DomainTools",
+      "slug": "dt",
+      "url": "https://api.domaintools.com/v1/"
+    }
+  },
+  {
+    "model": "service.Service",
+    "fields": {
+      "name": "Censys.io",
+      "slug": "cn",
+      "url": "https://www.censys.io/api/v1"
+    }
+  }
+]

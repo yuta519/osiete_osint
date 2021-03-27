@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block body_block %}
+<h3>Service List</h3>
+
+{% if services %}
+    <ul>
+    {% for service in services %}
+        <li><a href="{{ service.slug }}">{{ service.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No item.</p>
+{% endif %}
+{%endblock body_block%}
