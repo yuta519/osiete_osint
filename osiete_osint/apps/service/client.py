@@ -38,7 +38,7 @@ class VirusTotalClient(AbstractBaseClient):
     """ """
     def __init__(self):
         super().__init__()
-        self.headers['x-apikey'] =('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+        self.headers['x-apikey'] =('xxxxxxxxxxxxxxxxxxxx')
         self.vt = Service.objects.get(slug='vt')
 
     def crawl_data(self, target):
