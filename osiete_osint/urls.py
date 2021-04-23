@@ -20,16 +20,13 @@ from rest_framework import routers
 
 from osiete_osint.apps.service import views
 
-
 router = routers.DefaultRouter()
 router.register(r'services', views.api_service_page)
 router.register(r'data', views.api_datalist_page)
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include(router.urls)),
     path('', views.top_page),
-    path('data', views.datalist_page),
+    path('api/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls')),
 ]

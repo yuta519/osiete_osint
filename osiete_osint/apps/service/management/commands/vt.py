@@ -12,4 +12,5 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         virustotal = VirusTotalClient()
         for target in kwargs['targets']:
-            print(virustotal.get_vt_ipaddress(ip=target))
+            # print(virustotal.get_vt_ipaddress(ip=target))
+            print(virustotal.crawl_data(target=target))
