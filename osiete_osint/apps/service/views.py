@@ -1,10 +1,11 @@
 from django import template
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.template import loader
+from django.views.decorators.csrf import csrf_exempt
 
-from rest_framework import generics
-from rest_framework import viewsets
-from rest_framework import permissions
+from rest_framework import generics, permissions, viewsets
+from rest_framework.parsers import JSONParser
+
 
 from osiete_osint.apps.service.serializers import (DataListSerializer, 
                                                     ServiceSerializer)
@@ -33,3 +34,21 @@ class api_datalist_page(viewsets.ModelViewSet):
     queryset = DataList.objects.all()
     serializer_class = DataListSerializer
     # permission_classes = [permissions.IsAuthenticated]
+
+
+@csrf_exempt
+def osint_list(request):
+    """
+    List all OSINTs, or create a new OSINT.
+    """
+    if request.method == 'GET':
+        osints = DataList.objects.all()
+        serializer = DataListSerializer(osints, many=True)
+        return JsonResponse(serializer.data, safe=False)
+    elif request.method == 'POST':
+        data = JSONParser().parse(request)
+        serializer = DataListSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)

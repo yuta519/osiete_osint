@@ -29,4 +29,5 @@ urlpatterns = [
     path('', views.top_page),
     path('api/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls')),
+    path('osints/api', views.osint_list),
 ]
