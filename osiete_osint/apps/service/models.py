@@ -43,3 +43,16 @@ class DataList(models.Model):
     
     def __str__(self) -> str:
         return self.data_id
+
+class DataSearchHistry(models.Model):
+    data = models.ForeignKey('DataList', on_delete=models.CASCADE)
+    date = models.DateTimeField(null=False, blank=False)
+    from_ip = models.CharField(verbose_name='from ipaddr', max_length=16)
+    
+    class Meta:
+        verbose_name = 'OSINT'
+        verbose_name_plural = 'OSINT Search History'
+        ordering = ('data',)
+    
+    def __str__(self) -> str:
+        return self.data
