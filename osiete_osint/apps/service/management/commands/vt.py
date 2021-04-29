@@ -13,4 +13,5 @@ class Command(BaseCommand):
         virustotal = VirusTotalClient()
         for target in kwargs['targets']:
             # print(virustotal.get_vt_ipaddress(ip=target))
-            print(virustotal.crawl_data(target=target))
+            print(virustotal.assess_osint_risk(target))
+            # print(virustotal.crawl_data(target=target))

@@ -1,4 +1,4 @@
-from ipaddress import AddressValueError, IPv4Network
+from ipaddress import AddressValueError, IPv4Network, IPv4Address
 import logging
 import re
 import sys
@@ -8,7 +8,6 @@ from django.utils import timezone
 import requests
 
 from osiete_osint.apps.service.models import DataList, Service
-# from osiete_osint.apps.service.views import datalist_page
 
 
 logger = logging.getLogger(__name__)
@@ -18,22 +17,54 @@ class AbstractBaseClient():
     """ """
     def __init__(self):
         self.headers = {'user-agent': 'osiete/1.0'}
+    
+    def has_analyzed(self, osint):
+        already_analyzed, not_yet = 1, 0
+        exists_osint_in_db = DataList.objects.filter(data_id=osint)
+        has_analyzed = already_analyzed if exists_osint_in_db else not_yet
+        return has_analyzed, exists_osint_in_db
 
+    # TODO : create new method to analy
     def check_on_db(self, data):
-        DataList.objects.get_or_create(data_id=data, 
-            defaults={'data_id': data, 'malicious_level': DataList.UNKNOWN})
+        DataList.objects.get_or_create(data_id=data, defaults={'data_id': data,
+            'malicious_level': DataList.UNKNOWN})
+    
+    def find_osint_type(self, target):
+        IP, URL, HASH = 1, 2, 3
+        # Check whether target is ipaddress or not
+        try:
+            IPv4Address(target)
+            osint_type = IP
+        except AddressValueError:
+            # Check whether target is URL or not
+            pattern = "https?://[\w/:%#\$&\?\(\)~\.=\+\-]+"
+            osint_type = URL if re.match(pattern, target) else HASH
+        return osint_type
 
+    def assess_osint_risk(self, osint):
+        has_analyzed, osint_res =  self.has_analyzed(osint)
+        if has_analyzed == 1:
+            return osint_res.values('data_id', 'gui_url', 'malicious_level')
+        else:
+            res = self.assess_vt_risk(osint)
+            DataList.objects.create(data_id=osint, analyzing_type=res['type'], 
+                gui_url=res['gui'], malicious_level=res['malicious_level'])
+            return res
+
+    # TODO: chnage Method Name like crawl_osint_risk
     def save_risk(self):
         not_yet_investgated = DataList.objects.filter(malicious_level=0)
+        print(not_yet_investgated)
         for target in not_yet_investgated:
-            result = self.crawl_data(target.data_id)
+            result = self.assess_vt_risk(target.data_id)
+            print(result)
             target_data = DataList.objects.get(data_id=target)
             target_data.analyzing_type = result['type']
             target_data.gui_url = result['gui']
             target_data.last_analyzed = timezone.now()
             target_data.malicious_level = result['malicious_level']
             target_data.save()
-
+        
 
 class VirusTotalClient(AbstractBaseClient):
     """ """
@@ -43,25 +74,17 @@ class VirusTotalClient(AbstractBaseClient):
                                     'f0a42788a7dd03d6728c57')
         self.vt = Service.objects.get(slug='vt')
 
-    # TODO : Change method name
-    # TODO : Using vt.py for handling IP, Domain, URL
-    def crawl_data(self, target):
+    # TODO: Change method name
+    # TODO: Using vt.py for handling IP, Domain, URL
+    def assess_vt_risk(self, osint):
         """ """
-        # Check whether target is ipaddress or not
-        try:
-            IPv4Network(target)
-            # print(f"IP: {result}")
-            return self.get_vt_ipaddress(target)
-        except AddressValueError:
-            # Check whether target is URL or not
-            pattern = "https?://[\w/:%#\$&\?\(\)~\.=\+\-]+"
-            # is_url = re.match(pattern, target)
-            if re.match(pattern, target):
-                print("URL")
-                return self.get_vt_domain(target)
-            else:
-                print("Hash")
-                # return self.get_vt_hash()
+        osint_type = self.find_osint_type(osint)
+        if osint_type == 1:
+            return self.get_vt_ipaddress(osint)
+        elif osint_type == 2:
+            return self.get_vt_domain(osint)
+        elif osint_type == 3:
+            return self.get_vt_hash(target)
 
     def request(self, endpoint):
         response = requests.get(endpoint, headers=self.headers)
@@ -70,7 +93,7 @@ class VirusTotalClient(AbstractBaseClient):
         return result
 
     def get_vt_ipaddress(self, ip):
-        self.check_on_db(data=ip)
+        # self.check_on_db(data=ip)
         base = f'{self.vt.url}ip_addresses/'
         response = [self.request(f'{base}{ip}'), 
                     self.request(f'{base}{ip}/comments'),
@@ -115,7 +138,6 @@ class VirusTotalClient(AbstractBaseClient):
     #     return result
 
     def get_vt_domain(self, domain):
-        self.check_on_db(data=domain)
         domain = urlparse(domain).netloc        
         base = f'{self.vt.url}domains/'
         response = [self.request(f'{base}{domain}'), 
@@ -123,6 +145,9 @@ class VirusTotalClient(AbstractBaseClient):
                     # self.request(f'{base}{ip}/historical_whois'),
                     # self.request(f'{base}{ip}/resolution')
                     ]
+        if response[0].get('error') != None:
+            raise Exception('Your Input is invalid.')
+
         # TODO@yuta create historical and resolution
         result = self.parse_summary_domain(response[0])
         # result['comments'] = self.parse_comments_of_ipaddress(response[1])
@@ -130,8 +155,11 @@ class VirusTotalClient(AbstractBaseClient):
     
     def parse_summary_domain(self, res):
         """ """
-        attributes = res['data']['attributes']
-        analysis = res['data']['attributes']['last_analysis_stats']
+        try:
+            attributes = res['data']['attributes']
+            analysis = res['data']['attributes']['last_analysis_stats']
+        except KeyError:
+            raise('This IoC is not searched VT yet.')
 
         if analysis['malicious'] > 0:
             malicious_level = DataList.MAL

@@ -19,19 +19,20 @@ class Service(models.Model):
 
 class DataList(models.Model):
 
-    IP, DOM, HASH = 1, 2, 3
+    INVALID, IP, DOM, HASH = 0, 1, 2, 3
     ACT, ER, RUN = 1, 2, 3
     UNKNOWN, MAL, SUS, SA = 0, 1, 2, 3
 
-    SPECIMEN_CHOICES = ((IP, 'IPADDRESS'), (DOM, 'DOMAIN'), (HASH, 'FILEHASH'))
-    # CURRENT_STATUS = ((ACT, 'ACTIVE'), (ER, 'ERROR'), (RUN, 'RUNNING'))
+    SPECIMEN_CHOICES = ((INVALID, 'INVALID'), (IP, 'IPADDRESS'), 
+                        (DOM, 'DOMAIN'), (HASH, 'FILEHASH'))
     ANALYSIS_STATUS = ((UNKNOWN, 'UNKNOWN'), (MAL, 'MALICIOUS'), 
                         (SUS, 'SUSPICIOUS'),(SA, 'SAFE'))
+    # CURRENT_STATUS = ((ACT, 'ACTIVE'), (ER, 'ERROR'), (RUN, 'RUNNING'))
 
     data_id = CharField(max_length=100, unique=True, null=False)
     analyzing_type = models.IntegerField(null=True, choices=SPECIMEN_CHOICES)
     gui_url = models.URLField(null=True)
-    last_analyzed = models.DateTimeField(null=True, blank=True)
+    last_analyzed = models.DateTimeField(auto_now=True)
     malicious_level = models.IntegerField(null=True, choices=ANALYSIS_STATUS)
     # slug = models.SlugField(max_length=30)
     # status = models.IntegerField(default=1, choices=CURRENT_STATUS)
