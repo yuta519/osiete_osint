@@ -19,10 +19,10 @@ class AbstractBaseClient():
         self.headers = {'user-agent': 'osiete/1.0'}
     
     def has_analyzed(self, osint):
-        already_analyzed, not_yet = 1, 0
-        exists_osint_in_db = DataList.objects.filter(data_id=osint)
-        has_analyzed = already_analyzed if exists_osint_in_db else not_yet
-        return has_analyzed, exists_osint_in_db
+        not_yet, already_analyzed = 0, 1
+        is_osint_in_db = DataList.objects.filter(data_id=osint)
+        has_analyzed = already_analyzed if is_osint_in_db else not_yet
+        return has_analyzed, is_osint_in_db
 
     # TODO : create new method to analy
     def check_on_db(self, data):
@@ -70,8 +70,8 @@ class VirusTotalClient(AbstractBaseClient):
     """ """
     def __init__(self):
         super().__init__()
-        self.headers['x-apikey'] =('1c2fb58f31b82e29a93c6a87392b21bc3b64247b8a'
-                                    'f0a42788a7dd03d6728c57')
+        self.headers['x-apikey'] = ('1c2fb58f31b82e29a93c6a87392b21bc3b64247b8'
+                                    'af0a42788a7dd03d6728c57')
         self.vt = Service.objects.get(slug='vt')
 
     # TODO: Change method name
@@ -87,13 +87,10 @@ class VirusTotalClient(AbstractBaseClient):
             return self.get_vt_hash(target)
 
     def request(self, endpoint):
-        response = requests.get(endpoint, headers=self.headers)
-        result = response.json()
-        # print(result)
-        return result
+        response = requests.get(endpoint, headers=self.headers).json()
+        return response
 
     def get_vt_ipaddress(self, ip):
-        # self.check_on_db(data=ip)
         base = f'{self.vt.url}ip_addresses/'
         response = [self.request(f'{base}{ip}'), 
                     self.request(f'{base}{ip}/comments'),
