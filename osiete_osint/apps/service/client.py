@@ -1,7 +1,6 @@
 from ipaddress import AddressValueError, IPv4Network, IPv4Address
 import logging
 import re
-import sys
 from urllib.parse import urlparse
 
 from django.utils import timezone
@@ -42,7 +41,7 @@ class AbstractBaseClient():
         return osint_type
 
     def assess_osint_risk(self, osint):
-        has_analyzed, osint_res =  self.has_analyzed(osint)
+        has_analyzed, osint_res = self.has_analyzed(osint)
         if has_analyzed == 1:
             return osint_res.values('data_id', 'gui_url', 'malicious_level')
         else:
@@ -84,7 +83,7 @@ class VirusTotalClient(AbstractBaseClient):
         elif osint_type == 2:
             return self.get_vt_domain(osint)
         elif osint_type == 3:
-            return self.get_vt_hash(target)
+            return self.get_vt_hash(osint)
 
     def request(self, endpoint):
         response = requests.get(endpoint, headers=self.headers).json()
