@@ -2,6 +2,17 @@ from django.db import models
 from django.db.models.fields import CharField
 
 
+INVALID, IP, DOM, HASH = 0, 1, 2, 3
+ACT, ER, RUN = 1, 2, 3
+UNKNOWN, MAL, SUS, SA = 0, 1, 2, 3
+
+SPECIMEN_CHOICES = ((INVALID, 'INVALID'), (IP, 'IPADDRESS'), 
+                    (DOM, 'DOMAIN'), (HASH, 'FILEHASH'))
+ANALYSIS_STATUS = ((UNKNOWN, 'UNKNOWN'), (MAL, 'MALICIOUS'), 
+                    (SUS, 'SUSPICIOUS'),(SA, 'SAFE'))
+# CURRENT_STATUS = ((ACT, 'ACTIVE'), (ER, 'ERROR'), (RUN, 'RUNNING'))
+
+
 # Create your models here.
 class Service(models.Model):
     name = models.CharField(max_length=255)
@@ -18,17 +29,6 @@ class Service(models.Model):
 
 
 class DataList(models.Model):
-
-    INVALID, IP, DOM, HASH = 0, 1, 2, 3
-    ACT, ER, RUN = 1, 2, 3
-    UNKNOWN, MAL, SUS, SA = 0, 1, 2, 3
-
-    SPECIMEN_CHOICES = ((INVALID, 'INVALID'), (IP, 'IPADDRESS'), 
-                        (DOM, 'DOMAIN'), (HASH, 'FILEHASH'))
-    ANALYSIS_STATUS = ((UNKNOWN, 'UNKNOWN'), (MAL, 'MALICIOUS'), 
-                        (SUS, 'SUSPICIOUS'),(SA, 'SAFE'))
-    # CURRENT_STATUS = ((ACT, 'ACTIVE'), (ER, 'ERROR'), (RUN, 'RUNNING'))
-
     data_id = CharField(max_length=100, unique=True, null=False)
     analyzing_type = models.IntegerField(null=True, choices=SPECIMEN_CHOICES)
     gui_url = models.URLField(null=True)
@@ -45,15 +45,35 @@ class DataList(models.Model):
     def __str__(self) -> str:
         return self.data_id
 
-class DataSearchHistry(models.Model):
-    data = models.ForeignKey('DataList', on_delete=models.CASCADE)
+
+class VtSummary(models.Model):
+    osint_id = models.ForeignKey('DataList', on_delete=models.CASCADE)
+    owner = CharField(max_length=100, null=True)
+    gui_url = models.URLField(null=True)
+    malicious_level = models.IntegerField(null=True, choices=ANALYSIS_STATUS)
+    malicious_possibility = models.IntegerField(null=True,
+                                                choices=ANALYSIS_STATUS)
+    last_analyzed = models.DateTimeField(auto_now=True)
+    pass
+
+    class Meta:
+        verbose_name = 'OSINT Data'
+        verbose_name_plural = 'VT Summary'
+        ordering = ('osint_id',)
+
+    def __str__(self) -> str:
+        return self.osint_id
+
+
+class OsintSearchHistory(models.Model):
+    osint_id = models.ForeignKey('DataList', on_delete=models.CASCADE)
     date = models.DateTimeField(null=False, blank=False)
     from_ip = models.CharField(verbose_name='from ipaddr', max_length=16)
     
     class Meta:
         verbose_name = 'OSINT'
         verbose_name_plural = 'OSINT Search History'
-        ordering = ('data',)
+        ordering = ('osint_id',)
     
     def __str__(self) -> str:
-        return self.data
+        return self.osint_id
