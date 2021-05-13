@@ -1,4 +1,4 @@
-from ipaddress import AddressValueError, IPv4Network, IPv4Address
+from ipaddress import AddressValueError, IPv4Address
 import logging
 import re
 from urllib.parse import urlparse
@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 from django.utils import timezone
 import requests
 
-from osiete_osint.apps.service.models import DataList, Service
+from osiete_osint.apps.service.models import DataList, Service, VtSummary
 
 
 logger = logging.getLogger(__name__)
@@ -22,11 +22,6 @@ class AbstractBaseClient():
         is_osint_in_db = DataList.objects.filter(data_id=osint)
         has_analyzed = already_analyzed if is_osint_in_db else not_yet
         return has_analyzed, is_osint_in_db
-
-    # TODO : create new method to analy
-    def check_on_db(self, data):
-        DataList.objects.get_or_create(data_id=data, defaults={'data_id': data,
-            'malicious_level': DataList.UNKNOWN})
     
     def find_osint_type(self, target):
         IP, URL, HASH = 1, 2, 3
@@ -47,12 +42,31 @@ class AbstractBaseClient():
         else:
             res = self.assess_vt_risk(osint)
             DataList.objects.create(data_id=osint, analyzing_type=res['type'], 
-                gui_url=res['gui'], malicious_level=res['malicious_level'])
+                                    gui_url=res['gui'], 
+                                    malicious_level=res['malicious_level'])
+            data = DataList.objects.get(data_id=osint)
             return res
 
     # TODO: chnage Method Name like crawl_osint_risk
     def save_risk(self):
         not_yet_investgated = DataList.objects.filter(malicious_level=0)
+        print(not_yet_investgated)
+        for target in not_yet_investgated:
+            result = self.assess_vt_risk(target.data_id)
+            print(target, result)
+            target_data = DataList.objects.get(data_id=target)
+            target_data.analyzing_type = result['type']
+            target_data.gui_url = result['gui']
+            target_data.last_analyzed = timezone.now()
+            target_data.malicious_level = result['malicious_level']
+            target_data.save()
+            vt_osint = VtSummary(osint_id=target_data, owner=result['owner'], 
+                                gui_url=result['gui'])
+            vt_osint.save()
+    
+        # TODO: chnage Method Name like crawl_osint_risk
+    def save_vt_osint_info(self):
+        not_yet_investgated = VtSummary.objects.filter(malicious_level=0)
         print(not_yet_investgated)
         for target in not_yet_investgated:
             result = self.assess_vt_risk(target.data_id)
@@ -63,6 +77,7 @@ class AbstractBaseClient():
             target_data.last_analyzed = timezone.now()
             target_data.malicious_level = result['malicious_level']
             target_data.save()
+
         
 
 class VirusTotalClient(AbstractBaseClient):

@@ -6,13 +6,6 @@ INVALID, IP, DOM, HASH = 0, 1, 2, 3
 ACT, ER, RUN = 1, 2, 3
 UNKNOWN, MAL, SUS, SA = 0, 1, 2, 3
 
-SPECIMEN_CHOICES = ((INVALID, 'INVALID'), (IP, 'IPADDRESS'), 
-                    (DOM, 'DOMAIN'), (HASH, 'FILEHASH'))
-ANALYSIS_STATUS = ((UNKNOWN, 'UNKNOWN'), (MAL, 'MALICIOUS'), 
-                    (SUS, 'SUSPICIOUS'),(SA, 'SAFE'))
-# CURRENT_STATUS = ((ACT, 'ACTIVE'), (ER, 'ERROR'), (RUN, 'RUNNING'))
-
-
 # Create your models here.
 class Service(models.Model):
     name = models.CharField(max_length=255)
@@ -29,6 +22,17 @@ class Service(models.Model):
 
 
 class DataList(models.Model):
+
+    INVALID, IP, DOM, HASH = 0, 1, 2, 3
+    ACT, ER, RUN = 1, 2, 3
+    UNKNOWN, MAL, SUS, SA = 0, 1, 2, 3
+
+    SPECIMEN_CHOICES = ((INVALID, 'INVALID'), (IP, 'IPADDRESS'), 
+                        (DOM, 'DOMAIN'), (HASH, 'FILEHASH'))
+    ANALYSIS_STATUS = ((UNKNOWN, 'UNKNOWN'), (MAL, 'MALICIOUS'), 
+                        (SUS, 'SUSPICIOUS'),(SA, 'SAFE'))
+    # CURRENT_STATUS = ((ACT, 'ACTIVE'), (ER, 'ERROR'), (RUN, 'RUNNING'))    
+    
     data_id = CharField(max_length=100, unique=True, null=False)
     analyzing_type = models.IntegerField(null=True, choices=SPECIMEN_CHOICES)
     gui_url = models.URLField(null=True)
@@ -47,6 +51,11 @@ class DataList(models.Model):
 
 
 class VtSummary(models.Model):
+
+    ANALYSIS_STATUS = ((UNKNOWN, 'UNKNOWN'), (MAL, 'MALICIOUS'), 
+                        (SUS, 'SUSPICIOUS'),(SA, 'SAFE'))
+
+
     osint_id = models.ForeignKey('DataList', on_delete=models.CASCADE)
     owner = CharField(max_length=100, null=True)
     gui_url = models.URLField(null=True)
@@ -62,7 +71,8 @@ class VtSummary(models.Model):
         ordering = ('osint_id',)
 
     def __str__(self) -> str:
-        return self.osint_id
+        str_osint_id = str(self.osint_id)
+        return str_osint_id
 
 
 class OsintSearchHistory(models.Model):
