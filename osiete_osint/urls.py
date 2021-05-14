@@ -23,6 +23,8 @@ from osiete_osint.apps.service import views
 router = routers.DefaultRouter()
 router.register(r'services', views.api_service_page)
 router.register(r'data', views.api_datalist_page)
+router.register(r'vt_osint', views.api_vt_osint)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
