@@ -7,9 +7,10 @@ from rest_framework import generics, permissions, viewsets
 from rest_framework.parsers import JSONParser
 
 from osiete_osint.apps.service.client import VirusTotalClient
-from osiete_osint.apps.service.models import DataList, Service
+from osiete_osint.apps.service.models import DataList, Service, VtSummary
 from osiete_osint.apps.service.serializers import (DataListSerializer, 
-                                                    ServiceSerializer)
+                                                    ServiceSerializer,
+                                                    VtSummarySerializer)
 
 # Create your views here.
 
@@ -33,6 +34,11 @@ class api_service_page(viewsets.ModelViewSet):
 class api_datalist_page(viewsets.ModelViewSet):
     queryset = DataList.objects.all()
     serializer_class = DataListSerializer
+    # permission_classes = [permissions.IsAuthenticated]
+
+class api_vt_osint(viewsets.ModelViewSet):
+    queryset = VtSummary.objects.all()
+    serializer_class = VtSummarySerializer
     # permission_classes = [permissions.IsAuthenticated]
 
 
