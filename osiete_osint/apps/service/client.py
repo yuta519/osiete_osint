@@ -23,14 +23,14 @@ class AbstractBaseClient():
         has_analyzed = already_analyzed if is_osint_in_db else not_yet
         return has_analyzed, is_osint_in_db
     
-    def find_osint_type(self, target):
+    def judge_osint_type(self, target):
         IP, URL, HASH = 1, 2, 3
-        # Check whether target is ipaddress or not
+        # Check whether target osint is ipaddress or not
         try:
             IPv4Address(target)
             osint_type = IP
         except AddressValueError:
-            # Check whether target is URL or not
+            # Check whether target osint is URL or not
             pattern = "https?://[\w/:%#\$&\?\(\)~\.=\+\-]+"
             osint_type = URL if re.match(pattern, target) else HASH
         return osint_type
@@ -44,7 +44,6 @@ class AbstractBaseClient():
             DataList.objects.create(data_id=osint, analyzing_type=res['type'], 
                                     gui_url=res['gui'], 
                                     malicious_level=res['malicious_level'])
-            data = DataList.objects.get(data_id=osint)
             return res
 
     # TODO: chnage Method Name like crawl_osint_risk
@@ -61,7 +60,9 @@ class AbstractBaseClient():
             target_data.malicious_level = vt_result['malicious_level']
             target_data.save()
             vt_osint = VtSummary(osint_id=target_data, owner=vt_result['owner'], 
-                                gui_url=vt_result['gui'])
+                                gui_url=vt_result['gui'],
+                                malicious_level=vt_result['malicious_level'],
+                                )
             vt_osint.save()
 
 
@@ -77,7 +78,7 @@ class VirusTotalClient(AbstractBaseClient):
     # TODO: Using vt.py for handling IP, Domain, URL
     def assess_vt_risk(self, osint):
         """ """
-        osint_type = self.find_osint_type(osint)
+        osint_type = self.judge_osint_type(osint)
         if osint_type == 1:
             return self.get_vt_ipaddress(osint)
         elif osint_type == 2:
@@ -108,7 +109,7 @@ class VirusTotalClient(AbstractBaseClient):
 
         if analysis['malicious'] > 0:
             malicious_level = DataList.MAL
-        elif (analysis['malicious'] == 0 and analysis['suspicious'] > 0):
+        elif analysis['malicious'] == 0 and analysis['suspicious'] > 0:
             malicious_level = DataList.SUS
         else:
             malicious_level = DataList.SA
