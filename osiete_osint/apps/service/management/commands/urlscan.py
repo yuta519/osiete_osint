@@ -13,4 +13,4 @@ class Command(BaseCommand):
         urlscan = UrlScanClient()
         for target in kwargs['targets']:
             response = urlscan.fetch_domain_detail(target)
-            print(response.text)
+            print(response)
