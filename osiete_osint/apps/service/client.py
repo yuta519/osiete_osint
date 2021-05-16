@@ -1,13 +1,13 @@
 from ipaddress import AddressValueError, IPv4Address
-import json
 import logging
 import re
+from urllib import parse
 from urllib.parse import urlparse
 
 from django.utils import timezone
 import requests
 
-from osiete_osint.apps.service.models import (DataList, Service, Urlscan, 
+from osiete_osint.apps.service.models import (DataList, Service, UrlScan,
                                             VtSummary)
 
 
@@ -182,21 +182,27 @@ class UrlScanClient(AbstractBaseClient):
         super().__init__()
         self.headers = {'API-Key':'a6472481-0a4c-4c13-9f2b-aaf391f140dc',
                         'Content-Type':'application/json'}
+        self.us = Service.objects.get(slug='us')
         
     def fetch_domain_detail(self, target_osint):
         # data = {"url": "https://softbank.com/", "visibility": "public"}
         # response = requests.post('https://urlscan.io/api/v1/scan/',
         #                         headers=self.headers, data=json.dumps(data))
-        endpoint = f'https://urlscan.io/api/v1/search/?q=domain:{target_osint}'
-        response = requests.get(endpoint, headers=self.headers)
-        return response
+        endpoint = f'{self.us.url}/search/?q=domain:{target_osint}'
+        response = requests.get(endpoint, headers=self.headers).json()
+        return self.parse_domain_detail(response)
     
     def parse_domain_detail(self, res):
         try:
-            results = res['results']
+            recent_result = res['results'][0]
         except KeyError:
             raise('There is not IoC in UrlScan.')
-        
-
-
-        pass
+        parsed_result = {'date': recent_result['indexedAt'], 
+                        'ipaddress': recent_result['page']['ip'],
+                        'domain': recent_result['page']['domain'],
+                        'server': recent_result['page']['server'],
+                        'asnname': recent_result['page']['asnname'],
+                        'ans': recent_result['page']['asn'],
+                        'ptr': recent_result['page']['ptr'],
+                        'screenshot': recent_result['screenshot']}
+        return parsed_result
