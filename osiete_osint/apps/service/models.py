@@ -88,6 +88,27 @@ class VtComments(models.Model):
         return str_vt_summary
 
 
+class UrlScan(models.Model):
+    osint_id = models.ForeignKey('DataList', on_delete=models.CASCADE)
+    date = CharField(max_length=100, null=True)
+    primary_ip = CharField(max_length=20, null=True)
+    domain = CharField(max_length=100)
+    server = CharField(max_length=20)
+    asname = CharField(max_length=20)
+    asn = CharField(max_length=20)
+    ptr = CharField(max_length=100)
+    screenshot = CharField(max_length=100)
+
+    class Meta:
+        verbose_name = 'OSINT'
+        verbose_name_plural = 'urlscan.io information'
+        ordering = ('osint_id',)
+
+    def __str__(self) -> str:
+        str_osint_id = str(self.osint_id)
+        return str_osint_id
+
+
 class OsintSearchHistory(models.Model):
     osint_id = models.ForeignKey('DataList', on_delete=models.CASCADE)
     date = models.DateTimeField(null=False, blank=False)
