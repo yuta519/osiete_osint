@@ -38,5 +38,13 @@
       "slug": "cn",
       "url": "https://www.censys.io/api/v1"
     }
+  },
+  {
+    "model": "service.Service",
+    "fields": {
+      "name": "urlscan.io",
+      "slug": "us",
+      "url": "https://urlscan.io/api/v1"
+    }
   }
 ]
