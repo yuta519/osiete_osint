@@ -1,4 +1,5 @@
 from ipaddress import AddressValueError, IPv4Address
+import json
 import logging
 import re
 from urllib.parse import urlparse
@@ -6,7 +7,8 @@ from urllib.parse import urlparse
 from django.utils import timezone
 import requests
 
-from osiete_osint.apps.service.models import DataList, Service, VtSummary
+from osiete_osint.apps.service.models import (DataList, Service, Urlscan, 
+                                            VtSummary)
 
 
 logger = logging.getLogger(__name__)
@@ -171,5 +173,30 @@ class VirusTotalClient(AbstractBaseClient):
                     'gui': gui, 'type': DataList.DOM}
         return result
 
-    def get_vt_hash(self):
+    def get_vt_hash(self, hash):
+        pass
+
+
+class UrlScanClient(AbstractBaseClient):
+    def __init__(self):
+        super().__init__()
+        self.headers = {'API-Key':'a6472481-0a4c-4c13-9f2b-aaf391f140dc',
+                        'Content-Type':'application/json'}
+        
+    def fetch_domain_detail(self, target_osint):
+        # data = {"url": "https://softbank.com/", "visibility": "public"}
+        # response = requests.post('https://urlscan.io/api/v1/scan/',
+        #                         headers=self.headers, data=json.dumps(data))
+        endpoint = f'https://urlscan.io/api/v1/search/?q=domain:{target_osint}'
+        response = requests.get(endpoint, headers=self.headers)
+        return response
+    
+    def parse_domain_detail(self, res):
+        try:
+            results = res['results']
+        except KeyError:
+            raise('There is not IoC in UrlScan.')
+        
+
+
         pass
