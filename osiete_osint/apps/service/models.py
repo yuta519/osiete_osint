@@ -93,7 +93,7 @@ class UrlScan(models.Model):
     domain = CharField(max_length=100)
     primary_ip = CharField(max_length=20, null=True)
     server = CharField(max_length=20)
-    asname = CharField(max_length=20)
+    asnname = CharField(max_length=20)
     asn = CharField(max_length=20)
     ptr = CharField(max_length=100)
     screenshot = models.URLField(null=True)
