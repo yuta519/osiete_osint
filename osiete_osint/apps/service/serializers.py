@@ -12,8 +12,8 @@ class ServiceSerializer(serializers.HyperlinkedModelSerializer):
 class DataListSerializer(serializers.ModelSerializer):
     class Meta:
         model = DataList
-        fields = ('data_id', 'analyzing_type', 'gui_url', 'last_analyzed', 
-                    'malicious_level')
+        fields = ('data_id', 'analyzing_type', 'last_analyzed', 
+                  'malicious_level')
 
 
 class VtSummarySerializer(serializers.ModelSerializer):

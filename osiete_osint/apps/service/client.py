@@ -37,6 +37,16 @@ class AbstractBaseClient():
             osint_type = URL if re.match(pattern, target) else HASH
         return osint_type
 
+    def extract_url_domain(self, target_url):
+        """Extract domain from url given by user."""
+        url_pattern = 'https?://[\w/:%#\$&\?\(\)~\.=\+\-]+'
+        if re.match(url_pattern, target_url):
+            parsed_url = urlparse(target_url)
+            domain = parsed_url.netloc
+            return domain
+        else:
+            return target_url
+
     def assess_osint_risk(self, osint):
         has_analyzed, osint_res = self.has_analyzed(osint)
         if has_analyzed == 1:
@@ -66,6 +76,7 @@ class AbstractBaseClient():
                                 malicious_level=vt_result['malicious_level'],
                                 )
             vt_osint.save()
+            # us_osint = UrlScan(osint_id=target_data, date)
 
 
 class VirusTotalClient(AbstractBaseClient):
@@ -158,7 +169,7 @@ class VirusTotalClient(AbstractBaseClient):
             attributes = res['data']['attributes']
             analysis = res['data']['attributes']['last_analysis_stats']
         except KeyError:
-            raise('This IoC is not searched VT yet.')
+            raise RuntimeError('This IoC is not searched VT yet.')
 
         if analysis['malicious'] > 0:
             malicious_level = DataList.MAL
@@ -185,9 +196,7 @@ class UrlScanClient(AbstractBaseClient):
         self.us = Service.objects.get(slug='us')
         
     def fetch_domain_detail(self, target_osint):
-        # data = {"url": "https://softbank.com/", "visibility": "public"}
-        # response = requests.post('https://urlscan.io/api/v1/scan/',
-        #                         headers=self.headers, data=json.dumps(data))
+        target_osint = self.extract_url_domain(target_osint)
         endpoint = f'{self.us.url}/search/?q=domain:{target_osint}'
         response = requests.get(endpoint, headers=self.headers).json()
         return self.parse_domain_detail(response)
@@ -196,7 +205,7 @@ class UrlScanClient(AbstractBaseClient):
         try:
             recent_result = res['results'][0]
         except KeyError:
-            raise('There is not IoC in UrlScan.')
+            raise RuntimeError('There is not IoC in UrlScan.')
         parsed_result = {'date': recent_result['indexedAt'], 
                         'ipaddress': recent_result['page']['ip'],
                         'domain': recent_result['page']['domain'],

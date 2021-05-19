@@ -35,7 +35,6 @@ class DataList(models.Model):
     
     data_id = CharField(max_length=100, unique=True, null=False)
     analyzing_type = models.IntegerField(null=True, choices=SPECIMEN_CHOICES)
-    gui_url = models.URLField(null=True)
     last_analyzed = models.DateTimeField(auto_now=True)
     malicious_level = models.IntegerField(null=True, choices=ANALYSIS_STATUS)
     # slug = models.SlugField(max_length=30)
@@ -90,14 +89,14 @@ class VtComments(models.Model):
 
 class UrlScan(models.Model):
     osint_id = models.ForeignKey('DataList', on_delete=models.CASCADE)
-    date = CharField(max_length=100, null=True)
-    primary_ip = CharField(max_length=20, null=True)
+    date = models.DateField()
     domain = CharField(max_length=100)
+    primary_ip = CharField(max_length=20, null=True)
     server = CharField(max_length=20)
     asname = CharField(max_length=20)
     asn = CharField(max_length=20)
     ptr = CharField(max_length=100)
-    screenshot = CharField(max_length=100)
+    screenshot = models.URLField(null=True)
 
     class Meta:
         verbose_name = 'OSINT'
