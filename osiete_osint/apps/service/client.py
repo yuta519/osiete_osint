@@ -220,7 +220,7 @@ class UrlScanClient(AbstractBaseClient):
         response = requests.get(endpoint, headers=self.headers).json()
         return self.parse_domain_detail(response)
     
-    def parse_domain_detail(self, res):
+    def parse_domain_detail(self, res) -> dict:
         try:
             recent_result = res['results'][0]
         except KeyError:
@@ -230,7 +230,18 @@ class UrlScanClient(AbstractBaseClient):
                         'domain': recent_result['page']['domain'],
                         'server': recent_result['page']['server'],
                         'asnname': recent_result['page']['asnname'],
-                        'ans': recent_result['page']['asn'],
+                        'asn': recent_result['page']['asn'],
                         'ptr': recent_result['page']['ptr'],
                         'screenshot': recent_result['screenshot']}
         return parsed_result
+
+    def save_osint_info(self, target_osint) -> None:
+        us_result = self.fetch_domain_detail(target_osint)
+        osint_id = DataList.objects.get(target_osint)
+        us_osint = UrlScan(osint_id=osint_id, date=us_result['date'],
+                            domain=us_result['domain'], 
+                            primary_ip=us_result['ipaddress'],
+                            server=us_result['server'], asn=us_result['asn'],
+                            asnname=us_result['asnname'], ptr=us_result['ptr'], 
+                            screenshot=us_result['screenshot'])
+        us_osint.save()
