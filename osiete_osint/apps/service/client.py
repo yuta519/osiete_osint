@@ -59,23 +59,23 @@ class AbstractBaseClient():
             return res
 
     # TODO: chnage Method Name like crawl_osint_risk
-    def save_risk(self):
-        not_yet_investgated = DataList.objects.filter(malicious_level=0)
-        print(not_yet_investgated)
-        for target in not_yet_investgated:
-            vt_result = self.assess_vt_risk(target.data_id)
-            print(target, vt_result)
-            target_data = DataList.objects.get(data_id=target)
-            target_data.analyzing_type = vt_result['type']
-            target_data.gui_url = vt_result['gui']
-            target_data.last_analyzed = timezone.now()
-            target_data.malicious_level = vt_result['malicious_level']
-            target_data.save()
-            vt_osint = VtSummary(osint_id=target_data, owner=vt_result['owner'], 
-                                gui_url=vt_result['gui'],
-                                malicious_level=vt_result['malicious_level'],
-                                )
-            vt_osint.save()
+    # def save_risk(self):
+    #     not_yet_investgated = DataList.objects.filter(malicious_level=0)
+    #     print(not_yet_investgated)
+    #     for target in not_yet_investgated:
+    #         vt_result = self.assess_vt_risk(target.data_id)
+    #         print(target, vt_result)
+    #         target_data = DataList.objects.get(data_id=target)
+    #         target_data.analyzing_type = vt_result['type']
+    #         target_data.gui_url = vt_result['gui']
+    #         target_data.last_analyzed = timezone.now()
+    #         target_data.malicious_level = vt_result['malicious_level']
+    #         target_data.save()
+    #         vt_osint = VtSummary(osint_id=target_data, owner=vt_result['owner'], 
+    #                             gui_url=vt_result['gui'],
+    #                             malicious_level=vt_result['malicious_level'],
+    #                             )
+    #         vt_osint.save()
             # us_osint = UrlScan(osint_id=target_data, date)
 
 
@@ -186,6 +186,25 @@ class VirusTotalClient(AbstractBaseClient):
 
     def get_vt_hash(self, hash):
         pass
+
+    # TODO: chnage Method Name like crawl_osint_risk
+    def save_risk(self):
+        not_yet_investgated = DataList.objects.filter(malicious_level=0)
+        print(not_yet_investgated)
+        for target in not_yet_investgated:
+            vt_result = self.assess_vt_risk(target.data_id)
+            print(target, vt_result)
+            target_data = DataList.objects.get(data_id=target)
+            target_data.analyzing_type = vt_result['type']
+            target_data.gui_url = vt_result['gui']
+            target_data.last_analyzed = timezone.now()
+            target_data.malicious_level = vt_result['malicious_level']
+            target_data.save()
+            vt_osint = VtSummary(osint_id=target_data, owner=vt_result['owner'], 
+                                gui_url=vt_result['gui'],
+                                malicious_level=vt_result['malicious_level'],
+                                )
+            vt_osint.save()
 
 
 class UrlScanClient(AbstractBaseClient):
