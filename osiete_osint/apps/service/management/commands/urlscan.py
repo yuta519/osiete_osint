@@ -14,3 +14,4 @@ class Command(BaseCommand):
         for target in kwargs['targets']:
             response = urlscan.fetch_domain_detail(target)
             print(response)
+            # urlscan.save_osint_info(target)
