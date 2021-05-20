@@ -237,7 +237,7 @@ class UrlScanClient(AbstractBaseClient):
 
     def save_osint_info(self, target_osint) -> None:
         us_result = self.fetch_domain_detail(target_osint)
-        osint_id = DataList.objects.get(target_osint)
+        osint_id = DataList.objects.get(data_id=target_osint)
         us_osint = UrlScan(osint_id=osint_id, date=us_result['date'],
                             domain=us_result['domain'], 
                             primary_ip=us_result['ipaddress'],
