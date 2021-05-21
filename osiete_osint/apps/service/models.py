@@ -90,12 +90,12 @@ class VtComments(models.Model):
 class UrlScan(models.Model):
     osint_id = models.ForeignKey('DataList', on_delete=models.CASCADE)
     date = models.DateField()
-    domain = CharField(max_length=100)
+    domain = CharField(max_length=100, null=True)
     primary_ip = CharField(max_length=20, null=True)
-    server = CharField(max_length=20)
-    asnname = CharField(max_length=20)
-    asn = CharField(max_length=20)
-    ptr = CharField(max_length=100)
+    server = CharField(max_length=20, null=True)
+    asnname = CharField(max_length=20, null=True)
+    asn = CharField(max_length=20, null=True)
+    ptr = CharField(max_length=100, null=True)
     screenshot = models.URLField(null=True)
 
     class Meta:
