@@ -1,3 +1,4 @@
+from datetime import datetime
 from ipaddress import AddressValueError, IPv4Address
 import logging
 import re
@@ -225,11 +226,13 @@ class UrlScanClient(AbstractBaseClient):
             recent_result = res['results'][0]
         except KeyError:
             raise RuntimeError('There is not IoC in UrlScan.')
-        parsed_result = {'date': recent_result['indexedAt'], 
+        recent_result['indexedAt'] = re.sub(
+            '\.\d*\.*Z\Z', '', recent_result['indexedAt'])
+        parsed_result = {'date': datetime.fromisoformat(recent_result['indexedAt']), 
                         'ipaddress': recent_result['page']['ip'],
                         'domain': recent_result['page']['domain'],
                         'server': recent_result['page']['server'],
-                        'asnname': recent_result['page']['asnname'],
+                        # 'asnname': recent_result['page']['asnname'],
                         'asn': recent_result['page']['asn'],
                         'ptr': recent_result['page']['ptr'],
                         'screenshot': recent_result['screenshot']}
@@ -242,6 +245,7 @@ class UrlScanClient(AbstractBaseClient):
                             domain=us_result['domain'], 
                             primary_ip=us_result['ipaddress'],
                             server=us_result['server'], asn=us_result['asn'],
-                            asnname=us_result['asnname'], ptr=us_result['ptr'], 
+                            # asnname=us_result['asnname'], 
+                            ptr=us_result['ptr'], 
                             screenshot=us_result['screenshot'])
         us_osint.save()
