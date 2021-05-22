@@ -1,11 +1,10 @@
 from datetime import datetime
 from ipaddress import AddressValueError, IPv4Address
-import ipaddress
 import logging
 import re
-from urllib import parse
 from urllib.parse import urlparse
 
+from django.db.utils import IntegrityError
 from django.utils import timezone
 import requests
 
@@ -220,27 +219,24 @@ class UrlScanClient(AbstractBaseClient):
         target_osint = self.extract_url_domain(target_osint)
         endpoint = f'{self.us.url}/search/?q=domain:{target_osint}'
         response = requests.get(endpoint, headers=self.headers).json()
-        return self.parse_domain_detail(response)
+        if response['results']:
+            result = []
+            for res in response['results']:
+                result.append(self.parse_domain_detail(res))
+            return result
+        else:
+            return {'result': 'This IoC is not in UrlScan'}
     
     def parse_domain_detail(self, res) -> dict:
-        try:
-            recent_result = res['results'][0]
-            page = recent_result['page']
-        except KeyError:
-            raise RuntimeError('There is not IoC in UrlScan.')
-        except IndexError:
-            raise RuntimeError('There is not IoC in UrlScan.')
-        if recent_result['indexedAt']:
-            indexedAt = re.sub('\.\d*\.*Z', '', recent_result['indexedAt'])
-        else:
-            indexedAt = None
-        ip = page['ip'] if page['ip'] else None
-        domain = page['domain'] if page['domain'] else None
-        server = page['server'] if page['server'] else None
-        asnname = page['asnname'] if page['asnname'] else None
-        asn = page['asn'] if page['asn'] else None
-        ptr = page['ptr'] if page['ptr'] else None
-        screenshot = recent_result['screenshot']
+        page = res['page']
+        indexedAt = re.sub('\.\d*\.*Z', '', res['indexedAt'])
+        ip = page['ip'] if 'ip' in page else None
+        domain = page['domain'] if 'domain' in page else None
+        server = page['server'] if 'server' in page else None
+        asnname = page['asnname'] if 'asnname' in page else None
+        asn = page['asn'] if 'asn' in page else None
+        ptr = page['ptr'] if 'ptr' in page else None
+        screenshot = res['screenshot'] if 'screenshot' in res else None
         parsed_result = {'date': datetime.fromisoformat(indexedAt), 
                         'ipaddress': ip, 'domain': domain, 'server': server,
                         'asnname': asnname, 'asn': asn, 'ptr': ptr,
@@ -248,13 +244,17 @@ class UrlScanClient(AbstractBaseClient):
         return parsed_result
 
     def save_osint_info(self, target_osint) -> None:
-        us_result = self.fetch_domain_detail(target_osint)
+        us_results = self.fetch_domain_detail(target_osint)
         osint_id = DataList.objects.get(data_id=target_osint)
-        us_osint = UrlScan(osint_id=osint_id, date=us_result['date'],
-                            domain=us_result['domain'], 
-                            primary_ip=us_result['ipaddress'],
-                            server=us_result['server'], asn=us_result['asn'],
-                            asnname=us_result['asnname'], 
-                            ptr=us_result['ptr'], 
-                            screenshot=us_result['screenshot'])
-        us_osint.save()
+        for us_result in us_results:
+            us_osint = UrlScan(osint_id=osint_id, date=us_result['date'],
+                                domain=us_result['domain'], 
+                                primary_ip=us_result['ipaddress'],
+                                server=us_result['server'], asn=us_result['asn'],
+                                asnname=us_result['asnname'], 
+                                ptr=us_result['ptr'], 
+                                screenshot=us_result['screenshot'])
+            try:
+                us_osint.save()
+            except IntegrityError:
+                pass
