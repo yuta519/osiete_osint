@@ -88,7 +88,7 @@ class VtComments(models.Model):
 
 
 class UrlScan(models.Model):
-    osint_id = models.ForeignKey('DataList', on_delete=models.CASCADE)
+    osint_id = models.ForeignKey('DataList', on_delete=models.CASCADE )
     date = models.DateField()
     domain = CharField(max_length=100, unique=True)
     primary_ip = CharField(max_length=20, null=True)
@@ -104,8 +104,7 @@ class UrlScan(models.Model):
         ordering = ('osint_id',)
 
     def __str__(self) -> str:
-        str_osint_id = str(self.osint_id)
-        return str_osint_id
+        return self.domain 
 
 
 class OsintSearchHistory(models.Model):
