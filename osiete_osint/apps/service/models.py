@@ -90,7 +90,7 @@ class VtComments(models.Model):
 class UrlScan(models.Model):
     osint_id = models.ForeignKey('DataList', on_delete=models.CASCADE)
     date = models.DateField()
-    domain = CharField(max_length=100, null=True)
+    domain = CharField(max_length=100, unique=True)
     primary_ip = CharField(max_length=20, null=True)
     server = CharField(max_length=20, null=True)
     asnname = CharField(max_length=20, null=True)
