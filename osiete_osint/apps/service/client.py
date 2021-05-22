@@ -1,5 +1,6 @@
 from datetime import datetime
 from ipaddress import AddressValueError, IPv4Address
+import ipaddress
 import logging
 import re
 from urllib import parse
@@ -224,18 +225,26 @@ class UrlScanClient(AbstractBaseClient):
     def parse_domain_detail(self, res) -> dict:
         try:
             recent_result = res['results'][0]
+            page = recent_result['page']
         except KeyError:
             raise RuntimeError('There is not IoC in UrlScan.')
-        recent_result['indexedAt'] = re.sub(
-            '\.\d*\.*Z\Z', '', recent_result['indexedAt'])
-        parsed_result = {'date': datetime.fromisoformat(recent_result['indexedAt']), 
-                        'ipaddress': recent_result['page']['ip'],
-                        'domain': recent_result['page']['domain'],
-                        'server': recent_result['page']['server'],
-                        # 'asnname': recent_result['page']['asnname'],
-                        'asn': recent_result['page']['asn'],
-                        'ptr': recent_result['page']['ptr'],
-                        'screenshot': recent_result['screenshot']}
+        except IndexError:
+            raise RuntimeError('There is not IoC in UrlScan.')
+        if recent_result['indexedAt']:
+            indexedAt = re.sub('\.\d*\.*Z', '', recent_result['indexedAt'])
+        else:
+            indexedAt = None
+        ip = page['ip'] if page['ip'] else None
+        domain = page['domain'] if page['domain'] else None
+        server = page['server'] if page['server'] else None
+        asnname = page['asnname'] if page['asnname'] else None
+        asn = page['asn'] if page['asn'] else None
+        ptr = page['ptr'] if page['ptr'] else None
+        screenshot = recent_result['screenshot']
+        parsed_result = {'date': datetime.fromisoformat(indexedAt), 
+                        'ipaddress': ip, 'domain': domain, 'server': server,
+                        'asnname': asnname, 'asn': asn, 'ptr': ptr,
+                        'screenshot': screenshot}
         return parsed_result
 
     def save_osint_info(self, target_osint) -> None:
@@ -245,7 +254,7 @@ class UrlScanClient(AbstractBaseClient):
                             domain=us_result['domain'], 
                             primary_ip=us_result['ipaddress'],
                             server=us_result['server'], asn=us_result['asn'],
-                            # asnname=us_result['asnname'], 
+                            asnname=us_result['asnname'], 
                             ptr=us_result['ptr'], 
                             screenshot=us_result['screenshot'])
         us_osint.save()
