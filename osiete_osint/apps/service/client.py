@@ -8,8 +8,8 @@ from django.db.utils import IntegrityError
 from django.utils import timezone
 import requests
 
-from osiete_osint.apps.service.models import (DataList, Service, UrlScan,
-                                            VtSummary)
+from osiete_osint.apps.service.models import (
+    DataList, Service, UrlScan, VtSummary)
 
 
 logger = logging.getLogger(__name__)
@@ -250,9 +250,9 @@ class UrlScanClient(AbstractBaseClient):
             us_osint = UrlScan(osint_id=osint_id, date=us_result['date'],
                                 domain=us_result['domain'], 
                                 primary_ip=us_result['ipaddress'],
-                                server=us_result['server'], asn=us_result['asn'],
+                                server=us_result['server'], 
                                 asnname=us_result['asnname'], 
-                                ptr=us_result['ptr'], 
+                                asn=us_result['asn'], ptr=us_result['ptr'], 
                                 screenshot=us_result['screenshot'])
             try:
                 us_osint.save()
