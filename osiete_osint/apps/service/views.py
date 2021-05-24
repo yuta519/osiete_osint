@@ -1,4 +1,4 @@
-from django import template
+from django.core import serializers
 from django.http import Http404, HttpResponse, JsonResponse
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
@@ -8,9 +8,8 @@ from rest_framework.parsers import JSONParser
 
 from osiete_osint.apps.service.client import VirusTotalClient
 from osiete_osint.apps.service.models import DataList, Service, VtSummary
-from osiete_osint.apps.service.serializers import (DataListSerializer, 
-                                                    ServiceSerializer,
-                                                    VtSummarySerializer)
+from osiete_osint.apps.service.serializers import (
+                    DataListSerializer, ServiceSerializer, VtSummarySerializer)
 
 # Create your views here.
 
@@ -39,11 +38,16 @@ def osint_list(request):
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
         data = JSONParser().parse(request)
+        print(data)
+        if DataList.objects.filter(data_id=data['data_id']):
+            data = DataList.objects.filter(data_id=data['data_id'])
+            data_json = serializers.serialize('json', data)
+            print(data_json)
+            return HttpResponse(data_json, status=202)
         serializer = DataListSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return JsonResponse(vt.assess_vt_risk(data['data_id']), status=201)
-            # return JsonResponse(serializer.data, status=201) 
         return JsonResponse(serializer.errors, status=400)
 
 
