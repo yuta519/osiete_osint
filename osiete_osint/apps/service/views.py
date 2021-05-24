@@ -26,26 +26,11 @@ def datalist_page(request):
     context = {'datalist': datalist}
     return HttpResponse(template.render(context, request))
 
-class api_service_page(viewsets.ModelViewSet):
-    queryset = Service.objects.all()
-    serializer_class = ServiceSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-
-class api_datalist_page(viewsets.ModelViewSet):
-    queryset = DataList.objects.all()
-    serializer_class = DataListSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-
-class api_vt_osint(viewsets.ModelViewSet):
-    queryset = VtSummary.objects.all()
-    serializer_class = VtSummarySerializer
-    # permission_classes = [permissions.IsAuthenticated]
-
-
 @csrf_exempt
 def osint_list(request):
     """
     List all OSINTs, or create a new OSINT.
+    This method is used by React Frontend(osiete osint react).
     """
     vt = VirusTotalClient()
     if request.method == 'GET':
@@ -60,3 +45,28 @@ def osint_list(request):
             return JsonResponse(vt.assess_vt_risk(data['data_id']), status=201)
             # return JsonResponse(serializer.data, status=201) 
         return JsonResponse(serializer.errors, status=400)
+
+
+class api_service_page(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    queryset = Service.objects.all()
+    serializer_class = ServiceSerializer
+    # permission_classes = [permissions.IsAuthenticated]
+
+class api_datalist_page(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    queryset = DataList.objects.all()
+    serializer_class = DataListSerializer
+    # permission_classes = [permissions.IsAuthenticated]
+
+class api_vt_osint(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    queryset = VtSummary.objects.all()
+    serializer_class = VtSummarySerializer
+    # permission_classes = [permissions.IsAuthenticated]
