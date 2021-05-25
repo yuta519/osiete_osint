@@ -49,7 +49,8 @@ def osint_list(request):
             # print(data_dict)
             # data = DataList.objects.filter(data_id=data['data_id'])
             # data = VtSummary.objects.get(osint_id=data['data_id'])
-            data_queryset = VtSummary.objects.get(osint_id__data_id__contains=data['data_id'])
+            # print(data['data_id'])
+            data_queryset = VtSummary.objects.get(osint_id__data_id=data['data_id'])
             print(data_queryset)
             import sys
             sys.exit()
