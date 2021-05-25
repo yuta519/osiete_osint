@@ -1,3 +1,5 @@
+import json
+
 from django.core import serializers
 from django.http import Http404, HttpResponse, JsonResponse
 from django.template import loader
@@ -35,13 +37,26 @@ def osint_list(request):
     if request.method == 'GET':
         osints = DataList.objects.all()
         serializer = DataListSerializer(osints, many=True)
+        print(type(serializer))
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
         data = JSONParser().parse(request)
-        print(data)
-        if DataList.objects.filter(data_id=data['data_id']):
-            data = DataList.objects.filter(data_id=data['data_id'])
-            data_json = serializers.serialize('json', data)
+        is_data = DataList.objects.filter(data_id=data['data_id'])
+        if is_data:
+            # load_data = json.loads(serializers.serialize('json', is_data))
+            print(is_data)
+            data_dict = json.loads(serializers.serialize('json', is_data))
+            print(data_dict)
+            # data = DataList.objects.filter(data_id=data['data_id'])
+            # data = VtSummary.objects.get(osint_id=data['data_id'])
+            data = VtSummary.objects.get(id=data_dict[0]['pk'])
+            data = VtSummary._meta.get_fields()
+            print(data)
+            import sys
+            sys.exit()
+            data_dict = json.loads(serializers.serialize('json', data))
+            data_dict = data_dict[0]['fields']
+            data_json = json.dumps(data_dict)
             print(data_json)
             return HttpResponse(data_json, status=202)
         serializer = DataListSerializer(data=data)
