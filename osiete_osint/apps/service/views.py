@@ -44,31 +44,20 @@ def osint_list(request):
         if DataList.objects.filter(data_id=data['data_id']):
             try:
                 vtsum = VtSummary.objects.get(osint_id__data_id=data['data_id'])
-                # osint_id__data_id=data['data_id']).values_list(
-                #     'osint_id__data_id', 'malicious_level')
-        # data = VtSummary.objects.get(osint_id=32)
-                print(vtsum.malicious_level)
+                vtsum_json = {'data_id': vtsum.osint_id.data_id, 
+                    'malicious_level': vtsum.malicious_level, 
+                    'owner': vtsum.owner, 'gui': vtsum.gui_url
+                }
+                vtsum_json = json.dumps(vtsum_json)
+                return HttpResponse(vtsum_json, status=202)
             except:
-            #     print('nothing')
-                pass
-            # print(data['data_id'])
-            # data_queryset = VtSummary.objects.filter(osint_id=is_data)
-            # print(data_queryset)
-        #     import sys
-        #     sys.exit()
-        #     data = VtSummary.objects.get(osint_id=data_dict[0]['pk'])
-        #     data = VtSummary._meta.get_fields()
-        #     print(data)
-        #     data_dict = json.loads(serializers.serialize('json', data))
-        #     data_dict = data_dict[0]['fields']
-        #     data_json = json.dumps(data_dict)
-        #     print(data_json)
-        #     return HttpResponse(data_json, status=202)
-        # serializer = DataListSerializer(data=data)
-        # if serializer.is_valid():
-        #     serializer.save()
-        #     return JsonResponse(vt.assess_vt_risk(data['data_id']), status=201)
-        # return JsonResponse(serializer.errors, status=400)
+                raise RuntimeError('No data in VTSummary, but in datalist')
+        else:
+            serializer = DataListSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(vt.assess_vt_risk(data['data_id']), status=201)
+            return JsonResponse(serializer.errors, status=400)
 
 
 class api_service_page(viewsets.ModelViewSet):
