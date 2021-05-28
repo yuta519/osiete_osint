@@ -46,8 +46,7 @@ def osint_list(request):
                 vtsum = VtSummary.objects.get(osint_id__data_id=data['data_id'])
                 vtsum_json = {'data_id': vtsum.osint_id.data_id, 
                     'malicious_level': vtsum.malicious_level, 
-                    'owner': vtsum.owner, 'gui': vtsum.gui_url
-                }
+                    'owner': vtsum.owner, 'gui': vtsum.gui_url}
                 vtsum_json = json.dumps(vtsum_json)
                 return HttpResponse(vtsum_json, status=202)
             except:
