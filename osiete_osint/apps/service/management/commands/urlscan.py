@@ -6,7 +6,7 @@ from osiete_osint.apps.service.client import UrlScanClient
 class Command(BaseCommand):
     help = 'Return UrlScan results on console'
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser) -> None:
         parser.add_argument('targets', nargs='+', type=str)
 
     def handle(self, *args, **kwargs) -> str:
