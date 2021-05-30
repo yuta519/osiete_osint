@@ -97,7 +97,6 @@ class VirusTotalClient(AbstractBaseClient):
 
     def parse_summary_ipaddress(self, res) -> dict:
         """ """
-        print(res)
         attributes = res['data']['attributes']
         analysis = res['data']['attributes']['last_analysis_stats']
 

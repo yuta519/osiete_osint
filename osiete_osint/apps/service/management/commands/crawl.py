@@ -12,6 +12,4 @@ class Command(BaseCommand):
         return result
 
     def handle(self, *args, **kwargs):
-        # result = self.get_ipaddress_osint()
-        # self.stdout.write(f'{result[]}')
         self.fetch_osint_risk()
