@@ -3,14 +3,16 @@ from ipaddress import AddressValueError, IPv4Address
 import logging
 import re
 import time
+from typing import AsyncContextManager
 from urllib.parse import urlparse
+from django.db.models.fields import IntegerField
 
 from django.db.utils import IntegrityError
 from django.utils import timezone
 import requests
 
-from osiete_osint.apps.service.models import (
-    DataList, Service, UrlScan, VtSummary)
+from osiete_osint.apps.service.models import (DataList, Service, UrlScan, 
+                VtSummary)
 
 
 logger = logging.getLogger(__name__)
@@ -246,3 +248,20 @@ class UrlScanClient(AbstractBaseClient):
                 us_osint.save()
             except IntegrityError:
                 pass
+    
+    def update_uscaninfo(self):
+       all_osints = DataList.objects.filter(analyzing_type=2)
+       for osint in all_osints:
+            us_results = self.fetch_domain_detail(osint.data_id)
+            for us_result in us_results:
+                if us_result != 'result':
+                    print(osint.data_id, us_result['date'], us_result)
+                    us_osint = UrlScan(osint_id=osint, date=us_result['date'],
+                        domain=us_result['domain'], server=us_result['server'], 
+                        primary_ip=us_result['ipaddress'],
+                        asnname=us_result['asnname'], ptr=us_result['ptr'], 
+                        asn=us_result['asn'],screenshot=us_result['screenshot'])
+                    try:
+                        us_osint.save()
+                    except IntegrityError:
+                        pass
