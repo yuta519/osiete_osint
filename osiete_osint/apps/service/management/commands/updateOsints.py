@@ -9,8 +9,13 @@ class Command(BaseCommand):
     def update_osint_of_vt(self):
         vtclient = VirusTotalClient()
         vtclient.update_vtrisk()
-        print('===================')
+
+    def update_osint_of_us(self):
+        usclient = UrlScanClient()
+        usclient.update_uscaninfo()
+        pass
 
     def handle(self, *args, **kwargs) -> None:
-        self.update_osint_of_vt()
+        # self.update_osint_of_vt()
+        self.update_osint_of_us()
         pass
