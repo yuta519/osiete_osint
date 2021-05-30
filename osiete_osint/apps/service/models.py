@@ -37,8 +37,6 @@ class DataList(models.Model):
     analyzing_type = models.IntegerField(null=True, choices=SPECIMEN_CHOICES)
     last_analyzed = models.DateTimeField(auto_now=True)
     malicious_level = models.IntegerField(null=True, choices=ANALYSIS_STATUS)
-    # slug = models.SlugField(max_length=30)
-    # status = models.IntegerField(default=1, choices=CURRENT_STATUS)
 
     class Meta:
         verbose_name = 'OSINT Data'
