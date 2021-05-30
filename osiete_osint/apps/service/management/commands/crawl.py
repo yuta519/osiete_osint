@@ -8,7 +8,7 @@ class Command(BaseCommand):
 
     def fetch_osint_risk(self):
         virustotal = VirusTotalClient()
-        result = virustotal.save_risk()
+        result = virustotal.fetch_unknown_vtrisk()
         return result
 
     def handle(self, *args, **kwargs):
