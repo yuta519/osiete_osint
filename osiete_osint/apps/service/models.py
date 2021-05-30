@@ -58,7 +58,7 @@ class VtSummary(models.Model):
     malicious_level = models.IntegerField(null=True, choices=ANALYSIS_STATUS)
     malicious_possibility = models.IntegerField(null=True,
                                                 choices=ANALYSIS_STATUS)
-    last_analyzed = models.DateTimeField(auto_now=True)
+    indexed_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = 'OSINT Data'
