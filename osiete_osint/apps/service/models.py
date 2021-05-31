@@ -1,3 +1,4 @@
+from re import T
 from django.db import models
 from django.db.models.fields import CharField
 
@@ -31,7 +32,6 @@ class DataList(models.Model):
                         (DOM, 'DOMAIN'), (HASH, 'FILEHASH'))
     ANALYSIS_STATUS = ((UNKNOWN, 'UNKNOWN'), (MAL, 'MALICIOUS'), 
                         (SUS, 'SUSPICIOUS'),(SA, 'SAFE'))
-    # CURRENT_STATUS = ((ACT, 'ACTIVE'), (ER, 'ERROR'), (RUN, 'RUNNING'))    
     
     data_id = CharField(max_length=100, unique=True, null=False)
     analyzing_type = models.IntegerField(null=True, choices=SPECIMEN_CHOICES)
@@ -54,7 +54,7 @@ class VtSummary(models.Model):
 
     osint_id = models.ForeignKey('DataList', on_delete=models.CASCADE)
     owner = CharField(max_length=100, null=True)
-    gui_url = models.URLField(null=True)
+    gui_url = models.URLField(null=True, unique=True)
     malicious_level = models.IntegerField(null=True, choices=ANALYSIS_STATUS)
     malicious_possibility = models.IntegerField(null=True,
                                                 choices=ANALYSIS_STATUS)
@@ -71,6 +71,7 @@ class VtSummary(models.Model):
 
 
 class VtComments(models.Model):
+
     vt_summary = models.ForeignKey('VtSummary', on_delete=models.CASCADE)
     date = CharField(max_length=100, null=True)
     comment = CharField(max_length=1000, null=True)
@@ -86,6 +87,7 @@ class VtComments(models.Model):
 
 
 class UrlScan(models.Model):
+
     osint_id = models.ForeignKey('DataList', on_delete=models.CASCADE )
     date = models.DateField()
     domain = CharField(max_length=100, unique=True)
@@ -106,6 +108,7 @@ class UrlScan(models.Model):
 
 
 class OsintSearchHistory(models.Model):
+
     osint_id = models.ForeignKey('DataList', on_delete=models.CASCADE)
     date = models.DateTimeField(null=False, blank=False)
     from_ip = models.CharField(verbose_name='from ipaddr', max_length=16)
