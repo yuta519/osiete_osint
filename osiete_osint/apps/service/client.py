@@ -190,14 +190,10 @@ class VirusTotalClient(AbstractBaseClient):
             vt_result = self.fetch_vt_risk(osint.data_id)
             print(osint, vt_result)
             osint_data = DataList.objects.get(data_id=osint.data_id)
-            vt_osint = VtSummary(osint_id=osint_data, owner=vt_result['owner'], 
-                                gui_url=vt_result['gui'],
+            VtSummary.objects.update_or_create(gui_url=vt_result['gui'],
+                                osint_id=osint_data, owner=vt_result['owner'],
                                 malicious_level=vt_result['malicious_level'],)
-            vt_osint.save()
             time.sleep(15)
-        for row in DataList.objects.all().reverse():
-            if DataList.objects.filter(data_id=row.data_id).count() > 1:
-                row.delete()
 
 
 class UrlScanClient(AbstractBaseClient):
