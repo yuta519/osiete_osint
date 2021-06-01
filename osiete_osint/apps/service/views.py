@@ -55,7 +55,7 @@ def osint_list(request):
             serializer = DataListSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
-                return JsonResponse(vt.assess_vt_risk(data['data_id']), status=201)
+                return JsonResponse(vt.fetch_vt_risk(data['data_id']), status=201)
             return JsonResponse(serializer.errors, status=400)
 
 
