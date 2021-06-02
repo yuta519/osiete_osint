@@ -27,4 +27,4 @@ class Command(BaseCommand):
                 osint.save()
             except KeyError:
                 print('Got Restriction of VT API')
-                self.update_osint_of_us()
+                self.update_osint_of_us(osint)
