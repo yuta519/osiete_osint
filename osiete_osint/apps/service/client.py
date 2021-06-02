@@ -5,7 +5,6 @@ import re
 import time
 from typing import AsyncContextManager
 from urllib.parse import urlparse
-from django.db.models.fields import IntegerField
 
 from django.db.utils import IntegrityError
 from django.utils import timezone
@@ -13,7 +12,7 @@ from django.utils import timezone
 import requests
 
 from osiete_osint.apps.service.models import (DataList, Service, UrlScan, 
-                VtSummary)
+                                              VtSummary)
 
 
 logger = logging.getLogger(__name__)
@@ -61,6 +60,11 @@ class AbstractBaseClient():
                                     malicious_level=res['malicious_level'])
             return res
 
+    def update_osint(self):
+       all_osints = DataList.objects.all()
+       for osint in all_osints:
+           self.update_osint_vt_risk(osint)
+           
 
 class VirusTotalClient(AbstractBaseClient):
     """ """
@@ -190,7 +194,7 @@ class VirusTotalClient(AbstractBaseClient):
         for osint in all_osints:
             vt_result = self.fetch_vt_risk(osint.data_id)
             print(osint, vt_result)
-            time_threshold = datetime.now() - timedelta(days=3)
+            time_threshold = datetime.now() - timedelta(days=5)
             time_threshold = timezone.make_aware(time_threshold)
             print('threshold', time_threshold)
             print('osint', osint.last_analyzed)
