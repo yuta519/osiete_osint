@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from ipaddress import AddressValueError, IPv4Address
 import logging
 import re
@@ -9,6 +9,7 @@ from django.db.models.fields import IntegerField
 
 from django.db.utils import IntegrityError
 from django.utils import timezone
+
 import requests
 
 from osiete_osint.apps.service.models import (DataList, Service, UrlScan, 
@@ -189,12 +190,19 @@ class VirusTotalClient(AbstractBaseClient):
         for osint in all_osints:
             vt_result = self.fetch_vt_risk(osint.data_id)
             print(osint, vt_result)
-            osint_data = DataList.objects.get(data_id=osint.data_id)
-            VtSummary.objects.update_or_create(gui_url=vt_result['gui'],
+            time_threshold = datetime.now() - timedelta(days=3)
+            time_threshold = timezone.make_aware(time_threshold)
+            print('threshold', time_threshold)
+            print('osint', osint.last_analyzed)
+            try:
+                osint_data = DataList.objects.get(data_id=osint.data_id, 
+                                                last_analyzed__lt=time_threshold)
+                VtSummary.objects.update_or_create(gui_url=vt_result['gui'],
                                 osint_id=osint_data, owner=vt_result['owner'],
-                                malicious_level=vt_result['malicious_level'],)
-            time.sleep(15)
-
+                                malicious_level=vt_result['malicious_level'])
+                time.sleep(15)
+            except:
+                pass
 
 class UrlScanClient(AbstractBaseClient):
     def __init__(self):
