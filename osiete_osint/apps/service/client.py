@@ -5,14 +5,14 @@ import re
 import time
 from typing import AsyncContextManager
 from urllib.parse import urlparse
+from django.db.models.fields import IntegerField
 
 from django.db.utils import IntegrityError
 from django.utils import timezone
-
 import requests
 
 from osiete_osint.apps.service.models import (DataList, Service, UrlScan, 
-                                              VtSummary)
+                VtSummary)
 
 
 logger = logging.getLogger(__name__)
@@ -60,11 +60,6 @@ class AbstractBaseClient():
                                     malicious_level=res['malicious_level'])
             return res
 
-    def update_osint(self):
-       all_osints = DataList.objects.all()
-       for osint in all_osints:
-           self.update_osint_vt_risk(osint)
-           
 
 class VirusTotalClient(AbstractBaseClient):
     """ """
@@ -189,24 +184,22 @@ class VirusTotalClient(AbstractBaseClient):
                                 malicious_level=vt_result['malicious_level'],)
             vt_osint.save()
 
-    def update_vtrisk(self):
-        all_osints = DataList.objects.all()
-        for osint in all_osints:
-            vt_result = self.fetch_vt_risk(osint.data_id)
-            print(osint, vt_result)
-            time_threshold = datetime.now() - timedelta(days=5)
-            time_threshold = timezone.make_aware(time_threshold)
-            print('threshold', time_threshold)
-            print('osint', osint.last_analyzed)
-            try:
-                osint_data = DataList.objects.get(data_id=osint.data_id, 
-                                                last_analyzed__lt=time_threshold)
-                VtSummary.objects.update_or_create(gui_url=vt_result['gui'],
-                                osint_id=osint_data, owner=vt_result['owner'],
-                                malicious_level=vt_result['malicious_level'])
-                time.sleep(15)
-            except:
-                pass
+    def update_vtrisk(self, osint):
+        vt_result = self.fetch_vt_risk(osint.data_id)
+        print(osint, vt_result)
+        time_threshold = datetime.now() - timedelta(days=3)
+        time_threshold = timezone.make_aware(time_threshold)
+        print('threshold', time_threshold)
+        print('osint', osint.last_analyzed)
+        try:
+            osint_data = DataList.objects.get(data_id=osint.data_id, 
+                                            last_analyzed__lt=time_threshold)
+            VtSummary.objects.update_or_create(gui_url=vt_result['gui'],
+                            osint_id=osint_data, owner=vt_result['owner'],
+                            malicious_level=vt_result['malicious_level'])
+            time.sleep(15)
+        except:
+            pass
 
 class UrlScanClient(AbstractBaseClient):
     def __init__(self):
@@ -257,19 +250,17 @@ class UrlScanClient(AbstractBaseClient):
             except IntegrityError:
                 pass
     
-    def update_uscaninfo(self):
-       all_osints = DataList.objects.filter(analyzing_type=2)
-       for osint in all_osints:
-            us_results = self.fetch_domain_detail(osint.data_id)
-            for us_result in us_results:
-                if us_result != 'result':
-                    print(osint.data_id, us_result['date'], us_result)
-                    us_osint = UrlScan(osint_id=osint, date=us_result['date'],
-                        domain=us_result['domain'], server=us_result['server'], 
-                        primary_ip=us_result['ipaddress'],
-                        asnname=us_result['asnname'], ptr=us_result['ptr'], 
-                        asn=us_result['asn'],screenshot=us_result['screenshot'])
-                    try:
-                        us_osint.save()
-                    except IntegrityError:
-                        pass
+    def update_uscaninfo(self, osint):
+        us_results = self.fetch_domain_detail(osint.data_id)
+        for us_result in us_results:
+            if us_result != 'result':
+                print(osint.data_id, us_result['date'], us_result)
+                us_osint = UrlScan(osint_id=osint, date=us_result['date'],
+                    domain=us_result['domain'], server=us_result['server'], 
+                    primary_ip=us_result['ipaddress'],
+                    asnname=us_result['asnname'], ptr=us_result['ptr'], 
+                    asn=us_result['asn'],screenshot=us_result['screenshot'])
+                try:
+                    us_osint.save()
+                except IntegrityError:
+                    pass
