@@ -1,11 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from ipaddress import AddressValueError, IPv4Address
 import logging
 import re
 import time
-from typing import AsyncContextManager
 from urllib.parse import urlparse
-from django.db.models.fields import IntegerField
 
 from django.db.utils import IntegrityError
 from django.utils import timezone
@@ -185,21 +183,17 @@ class VirusTotalClient(AbstractBaseClient):
             vt_osint.save()
 
     def update_vtrisk(self, osint):
-        vt_result = self.fetch_vt_risk(osint.data_id)
-        print(osint, vt_result)
-        time_threshold = datetime.now() - timedelta(days=3)
-        time_threshold = timezone.make_aware(time_threshold)
-        print('threshold', time_threshold)
-        print('osint', osint.last_analyzed)
         try:
-            osint_data = DataList.objects.get(data_id=osint.data_id, 
-                                            last_analyzed__lt=time_threshold)
+            vt_result = self.fetch_vt_risk(osint.data_id)
+            osint_data = DataList.objects.get(data_id=osint.data_id)
             VtSummary.objects.update_or_create(gui_url=vt_result['gui'],
                             osint_id=osint_data, owner=vt_result['owner'],
                             malicious_level=vt_result['malicious_level'])
+            print('VirusTotal information is updated.')
             time.sleep(15)
         except:
             pass
+
 
 class UrlScanClient(AbstractBaseClient):
     def __init__(self):
@@ -208,7 +202,7 @@ class UrlScanClient(AbstractBaseClient):
                         'Content-Type':'application/json'}
         self.us = Service.objects.get(slug='us')
         
-    def fetch_domain_detail(self, target_osint):
+    def fetch_domain_detail(self, target_osint) -> dict:
         target_osint = self.extract_url_domain(target_osint)
         endpoint = f'{self.us.url}/search/?q=domain:{target_osint}'
         response = requests.get(endpoint, headers=self.headers).json()
@@ -236,25 +230,24 @@ class UrlScanClient(AbstractBaseClient):
                         'screenshot': screenshot}
         return parsed_result
 
-    def save_osint_info(self, target_osint) -> None:
-        us_results = self.fetch_domain_detail(target_osint)
-        osint_id = DataList.objects.get(data_id=target_osint)
-        for us_result in us_results:
-            us_osint = UrlScan(osint_id=osint_id, date=us_result['date'],
-                domain=us_result['domain'], server=us_result['server'], 
-                primary_ip=us_result['ipaddress'],asnname=us_result['asnname'], 
-                asn=us_result['asn'], ptr=us_result['ptr'], 
-                screenshot=us_result['screenshot'])
-            try:
-                us_osint.save()
-            except IntegrityError:
-                pass
+    # def save_osint_info(self, target_osint) -> None:
+    #     us_results = self.fetch_domain_detail(target_osint)
+    #     osint_id = DataList.objects.get(data_id=target_osint)
+    #     for us_result in us_results:
+    #         us_osint = UrlScan(osint_id=osint_id, date=us_result['date'],
+    #             domain=us_result['domain'], server=us_result['server'], 
+    #             primary_ip=us_result['ipaddress'],asnname=us_result['asnname'], 
+    #             asn=us_result['asn'], ptr=us_result['ptr'], 
+    #             screenshot=us_result['screenshot'])
+    #         try:
+    #             us_osint.save()
+    #         except IntegrityError:
+    #             pass
     
-    def update_uscaninfo(self, osint):
+    def update_uscaninfo(self, osint) -> None:
         us_results = self.fetch_domain_detail(osint.data_id)
         for us_result in us_results:
             if us_result != 'result':
-                print(osint.data_id, us_result['date'], us_result)
                 us_osint = UrlScan(osint_id=osint, date=us_result['date'],
                     domain=us_result['domain'], server=us_result['server'], 
                     primary_ip=us_result['ipaddress'],
@@ -262,5 +255,6 @@ class UrlScanClient(AbstractBaseClient):
                     asn=us_result['asn'],screenshot=us_result['screenshot'])
                 try:
                     us_osint.save()
+                    print('Urlscan information is updated.')
                 except IntegrityError:
                     pass
