@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
@@ -18,13 +19,17 @@ class Command(BaseCommand):
         usclient.update_uscaninfo(osint)
 
     def handle(self, *args, **kwargs) -> None:
-        all_osints = DataList.objects.all()
+        time_threshold = datetime.now() - timedelta(days=3)
+        time_threshold = timezone.make_aware(time_threshold)
+        all_osints = DataList.objects.filter(last_analyzed__lt=time_threshold)
         for osint in all_osints:
             try:
+                print('threshold', time_threshold)
+                print(osint, osint.last_analyzed)
                 self.update_osint_of_vt(osint)
                 self.update_osint_of_us(osint)
                 osint.last_analyzed = timezone.now()
                 osint.save()
             except KeyError:
-                print('Got Restriction of VT API')
+                print('Got Restriction of VT API:', osint)
                 self.update_osint_of_us(osint)
