@@ -75,6 +75,14 @@ class api_datalist_page(viewsets.ModelViewSet):
     serializer_class = DataListSerializer
     # permission_classes = [permissions.IsAuthenticated]
 
+class api_dangerous_data_list(viewsets.ModelViewSet):
+    """
+    API endpoint that return dangerous data
+    """
+    queryset = DataList.objects.filter(malicious_level=1)
+    serializer_class = DataListSerializer
+    # permission_classes = [permissions.IsAuthenticated]
+
 class api_vt_osint(viewsets.ModelViewSet):
     """
     API endpoint that allows groups to be viewed or edited.

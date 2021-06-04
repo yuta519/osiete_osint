@@ -24,7 +24,7 @@ router = routers.DefaultRouter()
 router.register(r'services', views.api_service_page)
 router.register(r'data', views.api_datalist_page)
 router.register(r'vt_osint', views.api_vt_osint)
-
+router.register(r'dangerous_osint', views.api_dangerous_data_list)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
