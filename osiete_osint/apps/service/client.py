@@ -230,20 +230,6 @@ class UrlScanClient(AbstractBaseClient):
                         'screenshot': screenshot}
         return parsed_result
 
-    # def save_osint_info(self, target_osint) -> None:
-    #     us_results = self.fetch_domain_detail(target_osint)
-    #     osint_id = DataList.objects.get(data_id=target_osint)
-    #     for us_result in us_results:
-    #         us_osint = UrlScan(osint_id=osint_id, date=us_result['date'],
-    #             domain=us_result['domain'], server=us_result['server'], 
-    #             primary_ip=us_result['ipaddress'],asnname=us_result['asnname'], 
-    #             asn=us_result['asn'], ptr=us_result['ptr'], 
-    #             screenshot=us_result['screenshot'])
-    #         try:
-    #             us_osint.save()
-    #         except IntegrityError:
-    #             pass
-    
     def update_uscaninfo(self, osint) -> None:
         us_results = self.fetch_domain_detail(osint.data_id)
         for us_result in us_results:
