@@ -75,7 +75,7 @@ class api_datalist_page(viewsets.ModelViewSet):
     serializer_class = DataListSerializer
     # permission_classes = [permissions.IsAuthenticated]
 
-class api_dangerous_data_list(viewsets.ModelViewSet):
+class api_serious_data_list(viewsets.ModelViewSet):
     """
     API endpoint that return dangerous data
     """
