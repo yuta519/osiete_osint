@@ -25,11 +25,12 @@ router.register(r'services', views.api_service_page)
 router.register(r'data', views.api_datalist_page)
 router.register(r'vt_osint', views.api_vt_osint)
 router.register(r'serious_osints', views.api_serious_data_list)
+# router.register(r'osint', views.osint_list)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.top_page),
     path('api/v1/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls')),
-    path('osints/api', views.osint_list),
+    path('api/v1/osint', views.osint_list),
 ]
