@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from osiete_osint.apps.service.models import DataList, Service, VtSummary
+from osiete_osint.apps.service.models import (DataList, Service, UrlScan, 
+                                              VtSummary)
 
 
 class ServiceSerializer(serializers.HyperlinkedModelSerializer):
@@ -16,9 +17,15 @@ class DataListSerializer(serializers.ModelSerializer):
                   'malicious_level')
 
 
+class UrlScanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UrlScan
+        fields = ('osint_id', 'date', 'domain', 'primary_ip', 'server', 'asn', 
+                  'asname', 'ptr', 'screenshot') 
+
+
 class VtSummarySerializer(serializers.ModelSerializer):
     data = DataListSerializer(read_only=True)
-
     class Meta:
         model = VtSummary
         fields = ('__all__')
