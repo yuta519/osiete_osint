@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics, permissions, viewsets
 from rest_framework.parsers import JSONParser
 
-from osiete_osint.apps.service.client import VirusTotalClient
+from osiete_osint.apps.service.client import UrlScanClient, VirusTotalClient
 from osiete_osint.apps.service.models import DataList, Service, VtSummary
 from osiete_osint.apps.service.serializers import (
                     DataListSerializer, ServiceSerializer, VtSummarySerializer)
@@ -58,35 +58,35 @@ def osint_list(request):
             return JsonResponse(serializer.errors, status=400)
 
 # @csrf_exempt
-# def api_urlscan(request):
-#     """
-#     List all OSINTs, or create a new OSINT.
-#     This method is used by React Frontend(osiete osint react).
-#     """
-#     vt = VirusTotalClient()
-#     if request.method == 'GET':
-#         osints = DataList.objects.all()
-#         serializer = DataListSerializer(osints, many=True)
-#         print(type(serializer))
-#         return JsonResponse(serializer.data, safe=False)
-#     elif request.method == 'POST':
-#         data = JSONParser().parse(request)
-#         if DataList.objects.filter(data_id=data['data_id']):
-#             try:
-#                 vtsum = VtSummary.objects.get(osint_id__data_id=data['data_id'])
-#                 vtsum_json = {'data_id': vtsum.osint_id.data_id, 
-#                     'malicious_level': vtsum.malicious_level, 
-#                     'owner': vtsum.owner, 'gui': vtsum.gui_url}
-#                 vtsum_json = json.dumps(vtsum_json)
-#                 return HttpResponse(vtsum_json, status=202)
-#             except:
-#                 raise RuntimeError('No data in VTSummary, but in datalist')
-#         else:
-#             serializer = DataListSerializer(data=data)
-#             if serializer.is_valid():
-#                 serializer.save()
-#                 return JsonResponse(vt.fetch_vt_risk(data['data_id']), status=201)
-#             return JsonResponse(serializer.errors, status=400)
+def api_urlscan(request):
+    """
+    List all OSINTs, or create a new OSINT.
+    This method is used by React Frontend(osiete osint react).
+    """
+    vt = VirusTotalClient()
+    if request.method == 'GET':
+        osints = DataList.objects.all()
+        serializer = DataListSerializer(osints, many=True)
+        print(type(serializer))
+        return JsonResponse(serializer.data, safe=False)
+    elif request.method == 'POST':
+        data = JSONParser().parse(request)
+        if DataList.objects.filter(data_id=data['data_id']):
+            try:
+                vtsum = VtSummary.objects.get(osint_id__data_id=data['data_id'])
+                vtsum_json = {'data_id': vtsum.osint_id.data_id, 
+                    'malicious_level': vtsum.malicious_level, 
+                    'owner': vtsum.owner, 'gui': vtsum.gui_url}
+                vtsum_json = json.dumps(vtsum_json)
+                return HttpResponse(vtsum_json, status=202)
+            except:
+                raise RuntimeError('No data in VTSummary, but in datalist')
+        else:
+            serializer = DataListSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(vt.fetch_vt_risk(data['data_id']), status=201)
+            return JsonResponse(serializer.errors, status=400)
 
 
 class api_service_page(viewsets.ModelViewSet):
