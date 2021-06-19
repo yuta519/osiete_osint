@@ -72,7 +72,7 @@ def api_urlscan(request):
     elif request.method == 'POST':
         data = JSONParser().parse(request)
         try:
-            uscan = UrlScan.objects.filter(osint_id=data['osint_id']):
+            uscan = UrlScan.objects.filter(osint_id=data['osint_id'])
             api_response = {'data_id': uscan.osint_id, 
                 'malicious_level': uscan.malicious_level, 
                 'owner': uscan.owner, 'gui': uscan.gui_url}
