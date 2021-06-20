@@ -57,7 +57,7 @@ def osint_list(request):
                 return JsonResponse(vt.fetch_vt_risk(data['data_id']), status=201)
             return JsonResponse(serializer.errors, status=400)
 
-# @csrf_exempt
+@csrf_exempt
 def api_urlscan(request):
     """
     List all OSINTs, or create a new OSINT.
@@ -67,17 +67,13 @@ def api_urlscan(request):
     if request.method == 'GET':
         uscan_osints = UrlScan.objects.all()
         serializer = UrlScanSerializer(uscan_osints, many=True)
-        # print(type(serializer))
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
-        data = JSONParser().parse(request)
+        req_data = JSONParser().parse(request)
         try:
-            uscan = UrlScan.objects.filter(osint_id=data['osint_id'])
-            api_response = {'data_id': uscan.osint_id, 
-                'malicious_level': uscan.malicious_level, 
-                'owner': uscan.owner, 'gui': uscan.gui_url}
-            api_response = json.dumps(api_response)
-            return HttpResponse(api_response, status=202)
+            uscan = UrlScan.objects.filter(domain=req_data['domain'])
+            serializer = UrlScanSerializer(uscan, many=True)
+            return JsonResponse(serializer.data[0], safe=False)
         except:
             raise RuntimeError('No data in Urlscan.io')
 
