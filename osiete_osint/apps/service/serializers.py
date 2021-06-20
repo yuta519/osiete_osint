@@ -21,7 +21,7 @@ class UrlScanSerializer(serializers.ModelSerializer):
     class Meta:
         model = UrlScan
         fields = ('osint_id', 'date', 'domain', 'primary_ip', 'server', 'asn', 
-                  'asname', 'ptr', 'screenshot') 
+                  'asnname', 'ptr', 'screenshot') 
 
 
 class VtSummarySerializer(serializers.ModelSerializer):
