@@ -41,6 +41,7 @@ def osint_list(request):
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
         data = JSONParser().parse(request)
+        print(request, data)
         if DataList.objects.filter(data_id=data['data_id']):
             try:
                 vtsum = VtSummary.objects.get(osint_id__data_id=data['data_id'])
