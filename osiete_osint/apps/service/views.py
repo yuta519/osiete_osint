@@ -75,7 +75,7 @@ def api_urlscan(request):
         try:
             uscan = UrlScan.objects.filter(domain=req_data['domain'])
             serializer = UrlScanSerializer(uscan, many=True)
-            return JsonResponse(serializer.data[0], safe=False)
+            return JsonResponse(serializer.data, safe=False)
         except:
             raise RuntimeError('No data in Urlscan.io')
 
