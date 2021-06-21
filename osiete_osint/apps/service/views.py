@@ -10,7 +10,8 @@ from rest_framework.parsers import JSONParser
 from osiete_osint.apps.service.client import UrlScanClient, VirusTotalClient
 from osiete_osint.apps.service.models import DataList, Service, UrlScan, VtSummary
 from osiete_osint.apps.service.serializers import (
-                    DataListSerializer, ServiceSerializer, UrlScanSerializer, VtSummarySerializer)
+    DataListSerializer, ServiceSerializer, UrlScanSerializer, 
+    VtSummarySerializer)
 
 # Create your views here.
 
