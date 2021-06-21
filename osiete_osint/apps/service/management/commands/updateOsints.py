@@ -19,6 +19,7 @@ class Command(BaseCommand):
         usclient.update_uscaninfo(osint)
 
     def handle(self, *args, **kwargs) -> None:
+        # time_threshold = datetime.now() - timedelta(minutes=2)
         time_threshold = datetime.now() - timedelta(days=3)
         time_threshold = timezone.make_aware(time_threshold)
         all_osints = DataList.objects.filter(last_analyzed__lt=time_threshold)
