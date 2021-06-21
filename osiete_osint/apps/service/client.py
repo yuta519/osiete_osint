@@ -29,14 +29,15 @@ class AbstractBaseClient():
         return has_analyzed, is_osint_in_db
     
     def judge_osint_type(self, target) -> int:
-        IP, URL, HASH = 1, 2, 3
+        IP, DOMAIN, HASH = 1, 2, 3
         # Check whether target osint is ipaddress or not
         try:
             IPv4Address(target)
             osint_type = IP
         except AddressValueError:
             # Check whether target osint is URL or not
-            osint_type = URL if re.match(self.url_pattern, target) else HASH
+            osint_type = DOMAIN 
+            # if re.match(self.url_pattern, target) else HASH
         return osint_type
 
     def extract_url_domain(self, target_url) -> str:
@@ -128,7 +129,7 @@ class VirusTotalClient(AbstractBaseClient):
     #     return result
 
     def get_vt_domain(self, domain) -> dict:
-        domain = urlparse(domain).netloc        
+        # domain = urlparse(domain).netloc        
         base = f'{self.vt.url}domains/'
         response = [self.request(f'{base}{domain}'), 
                     # self.request(f'{base}{ip}/comments'),
