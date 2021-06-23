@@ -32,5 +32,6 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('api/v1/osint', views.osint_list),
     path('api/v1/serious_osints', views.osint_list),
-    path('api/v1/urlscan_osint', views.api_urlscan),
+    path('api/v1/urlscan', views.api_urlscan),
+    path('api/v1/vtsummary', views.api_vtsummary),
 ]
